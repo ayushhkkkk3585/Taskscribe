@@ -36,7 +36,7 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="#demo"
+                  href="/login"
                   className="inline-flex items-center justify-center px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-teal-500 hover:text-teal-600 hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   Login
