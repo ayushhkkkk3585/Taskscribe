@@ -25,6 +25,7 @@ export default function LoginPage() {
       if (!res.ok) return setError(data.error || "Login failed");
 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       if (data.user.role === "manager") router.push("/dashboard/manager");
       else router.push("/dashboard/employee");

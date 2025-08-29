@@ -49,6 +49,7 @@ export default function SignupPage() {
 
       // Save token
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       // Redirect based on role
       if (data.user.role === "manager") router.push("/dashboard/manager");

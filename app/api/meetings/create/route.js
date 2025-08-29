@@ -114,6 +114,7 @@ ${transcript}
     // Process tasks
     const summary = [];
     const taskCreationPromises = [];
+    const emailBatch = []; // Array to collect all email requests
 
     for (let task of parsed.summary || []) {
       if (!task.assignedToEmail) continue;
@@ -134,41 +135,38 @@ ${transcript}
 
         taskCreationPromises.push(
           Task.create(taskData)
-            .then(async (newTask) => {
-              try {
-                await resend.emails.send({
-                  from: "Taskscribe <onboarding@resend.dev>",
-                  to: user.email,
-                  subject: `New Task Assignment: ${task.description}`,
-                  html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                      <h2 style="color: #2563eb;">New Task Assignment</h2>
-                      <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px;">
-                        <h3 style="margin-top: 0;">${task.description}</h3>
-                        <p><strong>Meeting:</strong> ${meeting.title}</p>
-                        ${deadline ? `
-                          <p><strong>Deadline:</strong> ${deadline.toLocaleString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          })}</p>
-                        ` : ''}
-                        <p><strong>Status:</strong> Pending</p>
-                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                          <p style="color: #4b5563; font-size: 14px;">
-                            This task was automatically created from your meeting notes.
-                          </p>
-                        </div>
+            .then((newTask) => {
+              // Prepare email but don't send it yet
+              emailBatch.push({
+                from: "Taskscribe <onboarding@resend.dev>",
+                to: user.email,
+                subject: `New Task Assignment: ${task.description}`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #2563eb;">New Task Assignment</h2>
+                    <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px;">
+                      <h3 style="margin-top: 0;">${task.description}</h3>
+                      <p><strong>Meeting:</strong> ${meeting.title}</p>
+                      ${deadline ? `
+                        <p><strong>Deadline:</strong> ${deadline.toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })}</p>
+                      ` : ''}
+                      <p><strong>Status:</strong> Pending</p>
+                      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                        <p style="color: #4b5563; font-size: 14px;">
+                          This task was automatically created from your meeting notes.
+                        </p>
                       </div>
                     </div>
-                  `
-                });
-              } catch (emailError) {
-                console.error('Failed to send email:', emailError);
-              }
+                  </div>
+                `
+              });
 
               summary.push({
                 description: task.description,
@@ -189,6 +187,17 @@ ${transcript}
 
     const taskIds = (await Promise.all(taskCreationPromises)).filter(id => id !== null);
 
+    // Send all emails in batch
+    if (emailBatch.length > 0) {
+      try {
+        // Use the Resend batch API to send all emails at once
+        await resend.batch.send(emailBatch);
+        console.log(`Successfully sent ${emailBatch.length} email notifications in batch`);
+      } catch (emailError) {
+        console.error('Failed to send batch emails:', emailError);
+      }
+    }
+
     meeting.tasks = taskIds;
     meeting.summary = summary;
     await meeting.save();
@@ -196,7 +205,8 @@ ${transcript}
     return new Response(JSON.stringify({
       meeting,
       tasksCreated: taskIds.length,
-      totalTasksAttempted: parsed.summary?.length || 0
+      totalTasksAttempted: parsed.summary?.length || 0,
+      emailsSent: emailBatch.length
     }), { status: 201 });
 
   } catch (err) {

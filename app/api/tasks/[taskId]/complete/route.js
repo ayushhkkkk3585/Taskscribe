@@ -1,46 +1,9 @@
-
 import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
-import Meeting from "@/models/Meeting";
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-export async function GET(req) {
-  try {
-    await dbConnect();
-
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    let query = {};
-    if (decoded.role === "employee") {
-      query.assignedTo = decoded.id;
-    }
-
-    const tasks = await Task.find(query)
-      .populate('assignedTo', 'name email')
-      .populate('meetingId', 'title')
-      .lean() || [];
-
-    return NextResponse.json({ tasks }, { status: 200 });
-  } catch (error) {
-    console.error("Tasks fetch error:", error);
-    return NextResponse.json({ tasks: [], error: error.message }, { status: 500 });
-  }
-}
-
-// PATCH: Employee marks a task as complete
-export async function PATCH(req) {
+export async function PATCH(req, { params }) {
   try {
     await dbConnect();
 
@@ -61,7 +24,9 @@ export async function PATCH(req) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { taskId } = await req.json();
+    // Await params for dynamic route as per Next.js requirements
+    const awaitedParams = await params;
+    const { taskId } = awaitedParams;
     if (!taskId) {
       return NextResponse.json({ error: "Task ID required" }, { status: 400 });
     }
@@ -72,7 +37,8 @@ export async function PATCH(req) {
       return NextResponse.json({ error: "Task not found or not assigned to you" }, { status: 404 });
     }
 
-    task.completed = true;
+    // Update the status field instead of completed
+    task.status = "completed";
     await task.save();
 
     return NextResponse.json({ message: "Task marked as complete", task }, { status: 200 });
