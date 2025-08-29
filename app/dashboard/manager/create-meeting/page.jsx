@@ -82,7 +82,7 @@ export default function CreateMeetingPage() {
               Transcript
             </label>
             <textarea
-              placeholder="Paste transcript here..."
+              placeholder="Eg) In the meeting it was discussed that vikas (vikas@gmail.com) is spearheading the ML model development by 20th sep 2025"
               value={transcript}
               onChange={(e) => setTranscript(e.target.value)}
               className="w-full border border-gray-300 rounded-lg p-3 h-40 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
