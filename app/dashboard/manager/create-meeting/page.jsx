@@ -72,7 +72,6 @@ export default function CreateMeetingPage() {
             <Loader />
             <div className="mt-6 text-teal-700 text-lg font-semibold text-center">
               Generating meeting summary and tasks using AI...<br />
-              Please wait while we analyze your transcript and assign tasks to your team!
             </div>
           </div>
         )}
