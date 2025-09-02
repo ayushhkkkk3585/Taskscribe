@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, index: true },
@@ -7,6 +8,7 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ["manager", "employee"], default: "employee" },
   department: { type: String, trim: true },
   position: { type: String, trim: true },
+  accessKey: { type: String, trim: true }, // Only for managers
 }, { timestamps: true });
 
 UserSchema.index({ email: 1 });

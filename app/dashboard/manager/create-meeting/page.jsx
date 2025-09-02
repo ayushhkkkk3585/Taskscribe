@@ -1,6 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const Loader = dynamic(() => import("../../../components/Loader.jsx"), { ssr: false });
+
 
 export default function CreateMeetingPage() {
   const [title, setTitle] = useState("");
@@ -9,6 +13,7 @@ export default function CreateMeetingPage() {
   const [tags, setTags] = useState("");
   const [managerId, setManagerId] = useState("");
   const router = useRouter();
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
   function parseJwt(token) {
     try {
@@ -31,6 +36,7 @@ export default function CreateMeetingPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadingSummary(true);
 
     const res = await fetch("/api/meetings/create", {
       method: "POST",
@@ -45,6 +51,7 @@ export default function CreateMeetingPage() {
     });
 
     const data = await res.json();
+    setLoadingSummary(false);
     if (res.ok) {
       alert("✅ Meeting created successfully!");
       router.push("/dashboard/manager");
@@ -60,72 +67,84 @@ export default function CreateMeetingPage() {
           Create New Meeting
         </h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Meeting Title
-            </label>
-            <input
-              type="text"
-              placeholder="Enter meeting title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            />
+        {loadingSummary && (
+          <div className="flex flex-col items-center justify-center py-10">
+            <Loader />
+            <div className="mt-6 text-teal-700 text-lg font-semibold text-center">
+              Generating meeting summary and tasks using AI...<br />
+              Please wait while we analyze your transcript and assign tasks to your team!
+            </div>
           </div>
+        )}
 
-          {/* Transcript */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Transcript
-            </label>
-            <textarea
-              placeholder="Eg) In the meeting it was discussed that vikas (vikas@gmail.com) is spearheading the ML model development by 20th sep 2025"
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 h-40 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
-              required
-            />
-          </div>
+        {!loadingSummary && (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Meeting Title
+              </label>
+              <input
+                type="text"
+                placeholder="Enter meeting title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
+            </div>
 
-          {/* Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Date
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            />
-          </div>
+            {/* Transcript */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Transcript
+              </label>
+              <textarea
+                placeholder="Eg) In the meeting it was discussed that vikas (vikas@gmail.com) is spearheading the ML model development by 20th sep 2025"
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-3 h-40 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+                required
+              />
+            </div>
 
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Tags
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. finance, planning, review"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
+            {/* Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Date
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
+            </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full bg-teal-600 text-white font-semibold py-3 rounded-lg shadow-md transition"
-          >
-            Create Meeting
-          </button>
-        </form>
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Tags
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. finance, planning, review"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              className="w-full bg-teal-600 text-white font-semibold py-3 rounded-lg shadow-md transition"
+            >
+              Create Meeting
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

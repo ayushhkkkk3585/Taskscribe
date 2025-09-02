@@ -8,11 +8,19 @@ import jwt from "jsonwebtoken";
 export async function POST(req) {
   await dbConnect();
 
+
   const body = await req.json();
-  const { name, email, password, role, department, position } = body;
+  const { name, email, password, role, department, position, accessKey } = body;
 
   if (!name || !email || !password || !role) {
     return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
+  }
+
+  // Check accessKey for manager signup
+  if (role === "manager") {
+    if (!accessKey || accessKey !== process.env.MANAGER_ACCESS_KEY) {
+      return new Response(JSON.stringify({ error: "Invalid or missing access key for manager" }), { status: 403 });
+    }
   }
 
   const existingUser = await User.findOne({ email });

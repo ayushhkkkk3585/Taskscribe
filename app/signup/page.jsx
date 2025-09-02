@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [position, setPosition] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [accessKey, setAccessKey] = useState("");
 
   async function handleSignup(e) {
     e.preventDefault();
@@ -38,6 +39,7 @@ export default function SignupPage() {
           role,
           department,
           position,
+          accessKey: role === "manager" ? accessKey : undefined,
         }),
       });
 
@@ -121,6 +123,17 @@ export default function SignupPage() {
               🧑‍💼 Manager
             </option>
           </select>
+
+          {role === "manager" && (
+            <input
+              type="text"
+              placeholder="Manager Access Key"
+              value={accessKey}
+              onChange={(e) => setAccessKey(e.target.value)}
+              required={role === "manager"}
+              className="w-full p-3 border rounded-lg focus:ring-2 border-gray-300 focus:ring-teal-400"
+            />
+          )}
 
           <input
             type="text"

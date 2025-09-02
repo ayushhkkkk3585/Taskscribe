@@ -9,6 +9,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [role, setRole] = useState("employee");
+  const [accessKey, setAccessKey] = useState("");
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -18,7 +20,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, role, accessKey: role === "manager" ? accessKey : undefined }),
       });
 
       const data = await res.json();
@@ -54,15 +56,21 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-4">
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full appearance-none p-3 pr-10 border rounded-lg bg-white text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 hover:border-teal-300 transition border-gray-300"
+            >
+              <option value="employee" className="text-gray-700 font-medium">👨‍💼 Employee</option>
+              <option value="manager" className="text-teal-700 font-semibold">🧑‍💼 Manager</option>
+            </select>
             <input
               type="email"
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg 
-                       focus:ring-2 focus:ring-teal-400 focus:border-teal-400
-                       outline-none transition"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none transition"
             />
             <input
               type="password"
@@ -70,10 +78,18 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg 
-            focus:ring-2 focus:ring-teal-400 focus:border-teal-400
-            outline-none transition"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none transition"
             />
+            {role === "manager" && (
+              <input
+                type="text"
+                placeholder="Manager Access Key"
+                value={accessKey}
+                onChange={(e) => setAccessKey(e.target.value)}
+                required={role === "manager"}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 outline-none transition"
+              />
+            )}
           </div>
 
           <button
