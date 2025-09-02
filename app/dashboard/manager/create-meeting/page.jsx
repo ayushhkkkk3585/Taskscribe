@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
-const Loader = dynamic(() => import("../../../components/Loader.jsx"), { ssr: false });
-
+const Loader = dynamic(() => import("../../../components/Loader.jsx"), {
+  ssr: false,
+});
 
 export default function CreateMeetingPage() {
   const [title, setTitle] = useState("");
@@ -59,6 +60,16 @@ export default function CreateMeetingPage() {
       alert("❌ Error: " + data.error);
     }
   };
+  if (loadingSummary) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <Loader />
+        <div className="mt-6 text-teal-700 text-lg font-semibold text-center">
+          Generating meeting summary and tasks using AI...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 sm:p-10 max-w-3xl mx-auto">
@@ -66,15 +77,6 @@ export default function CreateMeetingPage() {
         <h1 className="text-2xl font-bold mb-6 text-gray-800 text-center">
           Create New Meeting
         </h1>
-
-        {loadingSummary && (
-          <div className="flex flex-col items-center justify-center py-10">
-            <Loader />
-            <div className="mt-6 text-teal-700 text-lg font-semibold text-center">
-              Generating meeting summary and tasks using AI...<br />
-            </div>
-          </div>
-        )}
 
         {!loadingSummary && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
