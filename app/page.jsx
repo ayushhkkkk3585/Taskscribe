@@ -262,7 +262,7 @@ export default function Home() {
               <span className="text-xl font-bold text-gray-900">Taskcribe</span>
             </div>
             <div className="flex space-x-6 text-gray-600">
-              Made with ❤️ by Ayush K
+              Made with ❤️ By Team Taskscribe
             </div>
             <p className="text-gray-500 text-sm mt-4 md:mt-0">
               © 2025 Taskcribe. All rights reserved.
